@@ -17,6 +17,11 @@ description Generic projection runner infrastructure.
 
 dependencies
   framework: netcoreapp31
+    Microsoft.Extensions.Configuration >= LOCKEDVERSION
+    Microsoft.Extensions.Configuration.Binder >= LOCKEDVERSION
+    Microsoft.Extensions.Configuration.FileExtensions >= LOCKEDVERSION
+    Microsoft.Extensions.Configuration.Json >= LOCKEDVERSION
+    Microsoft.Extensions.Configuration.EnvironmentVariables >= LOCKEDVERSION
     Dapper >= LOCKEDVERSION
     Microsoft.Data.SqlClient >= LOCKEDVERSION
 

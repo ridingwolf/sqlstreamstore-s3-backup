@@ -1,5 +1,8 @@
+
 namespace EventStoreBackup
 {
+    using System.IO;
+    using Microsoft.Extensions.Configuration;
     using System;
     using Infrastructure;
 
@@ -8,55 +11,49 @@ namespace EventStoreBackup
 
         static void Main(string[] args)
         {
-            //todo: properly do config
-            IBackupServiceConfiguration configuration = new BackupConfiguration();
+            var configuration = Configure();
+            Backup(configuration);
+        }
 
-            var settings = new BackupSettings
+        private static BackupServiceConfiguration Configure()
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile($"appsettings.{Environment.MachineName.ToLowerInvariant()}.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            return new BackupServiceConfiguration(config);
+        }
+
+        private static void Backup(BackupServiceConfiguration configuration)
+        {
+            Validate.NotNull(() => configuration.BatchSize);
+            var store = new EventStoreReader(configuration.EventStore);
+            var backup = new S3Backup(configuration.S3);
+
+            var currentPosition = store.GetCurrentPosition();
+            if (!currentPosition.HasValue)
+                return;
+
+            var lastMessagePosition = currentPosition.Value;
+            var lastBackupPosition = backup.GetLastBackupPosition();
+            
+            while ( !lastBackupPosition.HasValue || lastBackupPosition.Value < lastMessagePosition)
             {
-                LastBackupPosition = GetLastBackupPosition(),
-                CurrentPosition = GetCurrentPosition()
-            };
+                var batchEndPosition =
+                    Math.Min((lastBackupPosition ?? 0) + configuration.BatchSize, lastMessagePosition);
 
-            Backup(settings);
-        }
 
-        private static ulong? GetCurrentPosition()
-        {
-            // get current position from store
+                //var batchEndPosition = lastBackupPosition.HasValue
+                //    ? Math.Min(lastBackupPosition.Value + configuration.BatchSize, lastMessagePosition)
+                //    : Math.Min(configuration.BatchSize, lastMessagePosition);
 
-            throw new NotImplementedException();
-        }
-
-        private static ulong? GetLastBackupPosition()
-        {
-
-            // get last postion from S3 
-            // pos = mostRecentFile.match("^\d{6}_\d+_(\d+)\.zip")
-
-            return null;
-        }
-
-        private static void Backup(BackupSettings settings)
-        {
-            // ignore stream-table for now
-
-            // for (number of batches)
-            //      create zip writer
-            //      open s3-filestream for zip
-            //      file format: YYYYMMDD_posFROM-postUNTIL.zip
-            //      query messages and write csv to zip stream
-
-            throw new NotImplementedException();
-        }
-
-        private class BackupSettings
-        {
-            public ulong? LastBackupPosition { get; set; }
-            public ulong? CurrentPosition { get; set; }
-
-            public bool RequiresBackup => CurrentPosition.HasValue &&
-                                          ( !LastBackupPosition.HasValue ||
-                                            LastBackupPosition.Value < CurrentPosition.Value);
+                // ignore stream-table for now
+                backup.Write(store.ReadEvents, lastBackupPosition, batchEndPosition);
+                lastBackupPosition = batchEndPosition;
+            }
         }
     }
 }

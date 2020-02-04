@@ -9,10 +9,11 @@ source https://api.nuget.org/v3/index.json
 // source https://informatievlaanderen.myget.org/F/nuget-mirror/api/v3/index.json username: "%MYGET_FEED_USER%" password: "%MYGET_FEED_PASS%" authtype: "basic"
 
 // PRODUCTION STUFF
-//nuget Microsoft.Extensions.Configuration
-//nuget Microsoft.Extensions.Configuration.FileExtensions
-//nuget Microsoft.Extensions.Configuration.Json
-
+nuget Microsoft.Extensions.Configuration 3.1.1
+nuget Microsoft.Extensions.Configuration.Binder 3.1.1
+nuget Microsoft.Extensions.Configuration.FileExtensions 3.1.1
+nuget Microsoft.Extensions.Configuration.Json 3.1.1
+nuget Microsoft.Extensions.Configuration.EnvironmentVariables 3.1.1
 nuget Dapper 2.0.30
 nuget Microsoft.Data.SqlClient 1.1.0
 
