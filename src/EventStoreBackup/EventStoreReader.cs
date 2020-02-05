@@ -8,36 +8,61 @@ namespace EventStoreBackup
 
     public class EventStoreReader
     {
-        private readonly EventStoreConfiguration _configuration;
+        private FromTableHelper From { get; }
+        private Func<SqlConnection> CreateConnection { get; }
 
         public EventStoreReader(EventStoreConfiguration configuration)
         {
             Validate.NotNull(() => configuration);
-            Validate.NotEmpty(
-                () => configuration.Connection,
-                () => configuration.Schema,
-                () => configuration.MessagesTable,
-                () => configuration.StreamsTable
-            );
-            _configuration = configuration;
+            Validate.NotEmpty(() => configuration.Connection);
+
+            From = new FromTableHelper(configuration);
+            CreateConnection = () => new SqlConnection(configuration.Connection);
         }
-        
-        private SqlConnection CreateConnection() => new SqlConnection(_configuration.Connection);
 
-        public uint? GetCurrentPosition() => throw new NotImplementedException();
+        public uint? GetCurrentPosition()
+        {
+            using (var connection = CreateConnection())
+                return connection.ExecuteScalar<uint?>($"SELECT MAX(Position) {From.Streams}");
+        }
 
-        public IEnumerable<dynamic> ReadEvents(ulong? from, ulong until)
+        public IEnumerable<dynamic> ReadStreams()
+        {
+            using (var connection = CreateConnection())
+                return connection.Query($"SELECT * {From.Streams}");
+        }
+
+        public IEnumerable<dynamic> ReadEvents(ulong? after, ulong to)
         {
             using (var connection = CreateConnection())
             {
-                var query = $"SELECT * FROM [table] " +
-                            $"WHERE Position <= {until} " +
-                            (from.HasValue ? $"AND Position > {from.Value} " : "") +
-                            "ORDER BY Position DESC";
+                var query =
+                    $"SELECT * {From.Messages} " +
+                    $"WHERE Position <= {to} " +
+                    (after.HasValue ? $"AND Position > {after.Value} " : "") +
+                    "ORDER BY Position DESC";
 
                 return connection.Query(query);
             }
         }
-    }
 
+        private class FromTableHelper
+        {
+            public FromTableHelper(EventStoreConfiguration configuration)
+            {
+                Validate.NotNull(() => configuration);
+                Validate.NotEmpty(
+                    () => configuration.Schema,
+                    () => configuration.MessagesTable,
+                    () => configuration.StreamsTable
+                );
+
+                Streams = $"FROM {configuration.Schema}.{configuration.StreamsTable}";
+                Messages = $"FROM {configuration.Schema}.{configuration.MessagesTable}";
+            }
+
+            public string Streams { get; }
+            public string Messages { get; }
+        }
+    }
 }
