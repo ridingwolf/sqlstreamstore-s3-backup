@@ -5,7 +5,7 @@ namespace EventStoreBackup.Infrastructure
 
     public static class Validate
     {
-        public static void NotNull<T>(params Expression<Func<T>>[] expressions)
+        public static void NotNull(params Expression<Func<object>>[] expressions)
         {
             foreach (var expression in expressions)
             {
