@@ -5,3 +5,4 @@ Microsoft.Extensions.Configuration.Json
 Microsoft.Extensions.Configuration.EnvironmentVariables
 Dapper
 Microsoft.Data.SqlClient
+AWSSDK.S3

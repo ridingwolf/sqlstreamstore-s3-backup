@@ -1,7 +1,8 @@
-using EventStoreBackup.Infrastructure;
-
 namespace EventStoreBackup
 {
+    using System.Threading.Tasks;
+    using Infrastructure;
+
     public class BackupService
     {
         private readonly EventStoreReader _store;
@@ -14,13 +15,13 @@ namespace EventStoreBackup
             _backup = new S3Backup(configuration.S3, configuration.BatchSize , _store);
         }
 
-        public void Backup()
+        public async Task Backup()
         {
             var currentPosition = _store.GetCurrentPosition();
             if (!currentPosition.HasValue)
                 return;
 
-            var lastBackupPosition = _backup.GetLastBackupPosition();
+            var lastBackupPosition = await _backup.GetLastBackupPosition();
             if (lastBackupPosition.HasValue && lastBackupPosition.Value >= currentPosition.Value)
                 return;
 

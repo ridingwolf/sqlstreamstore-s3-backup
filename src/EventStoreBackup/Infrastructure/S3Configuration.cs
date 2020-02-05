@@ -4,6 +4,6 @@ namespace EventStoreBackup.Infrastructure
     {
         public string Region { get; set; }
         public string Bucket { get; set; }
-        public string DestinationPath { get; set; }
+        public string EventStoreName { get; set; }
     }
 }

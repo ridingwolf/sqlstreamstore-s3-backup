@@ -1,6 +1,9 @@
 RESTRICTION: == netcoreapp3.1
 NUGET
   remote: https://api.nuget.org/v3/index.json
+    AWSSDK.Core (3.3.104.22)
+    AWSSDK.S3 (3.3.110.20)
+      AWSSDK.Core (>= 3.3.104.22 < 3.4)
     Be.Vlaanderen.Basisregisters.Build.Pipeline (3.2)
       Fake.Core.Environment (>= 5.18.2)
       Fake.Core.Process (>= 5.18.2)

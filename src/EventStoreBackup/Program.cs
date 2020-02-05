@@ -3,15 +3,16 @@ namespace EventStoreBackup
     using System.IO;
     using Microsoft.Extensions.Configuration;
     using System;
+    using System.Threading.Tasks;
     using Infrastructure;
 
     class Program
     {
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var service = new BackupService(Configure());
-            service.Backup();
+            await service.Backup();
         }
 
         private static BackupServiceConfiguration Configure()

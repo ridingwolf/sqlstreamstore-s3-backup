@@ -24,6 +24,7 @@ dependencies
     Microsoft.Extensions.Configuration.EnvironmentVariables >= LOCKEDVERSION
     Dapper >= LOCKEDVERSION
     Microsoft.Data.SqlClient >= LOCKEDVERSION
+    AWSSDK.S3 >= LOCKEDVERSION
 
 files
   bin\Release\netcoreapp3.1\Be.Vlaanderen.Basisregisters.Projector.dll => lib\netcoreapp3.1
